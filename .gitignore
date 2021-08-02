@@ -3,3 +3,4 @@ target
 discordbot-api/target
 discordbot-parent/target
 discordbot-parent/src/main/resources/token.txt
+module
