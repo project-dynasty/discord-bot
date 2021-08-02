@@ -30,7 +30,7 @@
         <dependency>
             <groupId>net.verany</groupId>
             <artifactId>core-verany</artifactId>
-            <version>2021.7.6.3</version>
+            <version>2021.7.6.4</version>
         </dependency>
     </dependencies>
 
