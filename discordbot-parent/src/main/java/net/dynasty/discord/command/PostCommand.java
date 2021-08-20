@@ -9,12 +9,14 @@ import net.dynasty.discord.player.IDiscordPlayer;
 import net.dynasty.discord.post.Post;
 import org.apache.commons.io.IOUtils;
 
+import java.awt.*;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileReader;
 import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,11 +35,13 @@ public class PostCommand extends AbstractCommand {
             if (args[0].equalsIgnoreCase("queue")) {
                 StringBuilder posts = new StringBuilder();
                 for (Post queuedPost : queuedPosts) {
-                    posts.append("-post confirm ").append(queuedPost.getId()).append("\n");
+                    posts.append("``").append(queuedPost.getId()).append("``").append(" - ").append(new SimpleDateFormat("dd.MM. HH:mm:ss").format(queuedPost.getTimestamp())).append(" in ").append(queuedPost.getTextChannel().getAsMention()).append("\n");
                 }
                 EmbedBuilder embedBuilder = new EmbedBuilder();
                 embedBuilder.setTitle("Currently queued posts:");
                 embedBuilder.setDescription(posts.toString());
+                if (queuedPosts.isEmpty())
+                    embedBuilder.setDescription("Nothing here..");
                 event.getChannel().sendMessage(embedBuilder.build()).queue();
                 return;
             }
@@ -48,14 +52,14 @@ public class PostCommand extends AbstractCommand {
                     try {
                         TextChannel channel = DiscordBot.INSTANCE.getGuild().getTextChannelById(Long.parseLong(args[0]));
                         if (channel == null) {
-                            event.getChannel().sendMessage(MessageFormat.format("Could not find a channel with id {0}.", args[0])).queue();
+                            event.getChannel().sendMessage(new EmbedBuilder().setDescription(MessageFormat.format("Could not find a channel with id {0}.", args[0])).setColor(Color.red).build()).queue();
                             return;
                         }
-                        Post post = new Post(message, channel);
+                        Post post = new Post(user, message, channel);
                         queuedPosts.add(post);
-                        channel.sendMessage(MessageFormat.format("Please confirm your post with ``-post confirm {0}``, or preview with ``-post preview {0}``", post.getId())).queue();
+                        event.getChannel().sendMessage(MessageFormat.format("Please confirm your post with ``-post confirm {0}``, or preview with ``-post preview {0}``", post.getId())).queue();
                     } catch (NumberFormatException e) {
-                        event.getChannel().sendMessage(MessageFormat.format("{0} is not a real number!", args[0])).queue();
+                        event.getChannel().sendMessage(new EmbedBuilder().setDescription(MessageFormat.format("{0} is not a real number!", args[0])).setColor(Color.red).build()).queue();
                         return;
                     }
                 }
@@ -68,8 +72,8 @@ public class PostCommand extends AbstractCommand {
                 String id = args[1];
                 Post post = queuedPosts.stream().filter(queued -> queued.getId().equals(id)).findFirst().orElse(null);
                 if (post == null) return;
-                event.getChannel().sendMessage("You posted **" + post.getId() + "**.").queue();
                 post.send();
+                event.getChannel().sendMessage(new EmbedBuilder().setDescription(user.getNickname() + " posted **" + post.getId() + "** in " + post.getTextChannel().getAsMention() + ".").setColor(Color.cyan).build()).queue();
                 queuedPosts.remove(post);
                 return;
             }
