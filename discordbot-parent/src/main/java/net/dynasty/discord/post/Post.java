@@ -6,6 +6,7 @@ import lombok.Setter;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dynasty.discord.DiscordBot;
+import net.dynasty.discord.player.IDiscordPlayer;
 import net.verany.api.Verany;
 
 @Getter
@@ -14,6 +15,8 @@ import net.verany.api.Verany;
 public class Post {
 
     private final String id = Verany.generate(5);
+    private final long timestamp = System.currentTimeMillis();
+    private final IDiscordPlayer sender;
     private final String message;
     private final TextChannel textChannel;
     private EmbedBuilder embedBuilder = null;
