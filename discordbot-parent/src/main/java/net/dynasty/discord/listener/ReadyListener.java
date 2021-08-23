@@ -4,6 +4,7 @@ import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.events.ReadyEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import net.dv8tion.jda.api.interactions.commands.Command;
 import net.dynasty.discord.DiscordBot;
 import net.dynasty.discord.command.MaintenanceCommand;
 import net.dynasty.discord.command.PostCommand;
@@ -25,11 +26,21 @@ public class ReadyListener extends ListenerAdapter {
             CommandManager.addCommand(new UpdateCommand("update"));
         });*/
 
-        CommandManager.addCommand(new PostCommand("post"));
-        CommandManager.addCommand(new MaintenanceCommand("maintenance"));
+        //CommandManager.addCommand(new PostCommand("post"));
 
         System.out.println("Loading member...");
         long timestamp = System.currentTimeMillis();
+        if(guild == null) {
+            System.out.println("guild is null");
+            return;
+        }
+        for (Command command : guild.retrieveCommands().complete()) {
+            guild.deleteCommandById(command.getIdLong()).queue();
+        }
+        guild.updateCommands().queue();
+
+        CommandManager.addCommand(new MaintenanceCommand("maintenance"));
+
         guild.loadMembers(member -> {
 
             System.out.println(member.getEffectiveName());

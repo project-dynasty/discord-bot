@@ -9,25 +9,24 @@ import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.requests.GatewayIntent;
-import net.dynasty.discord.command.AbstractCommand;
-import net.dynasty.discord.command.handler.CommandManager;
-import net.dynasty.discord.listener.MessageListener;
+import net.dv8tion.jda.api.utils.MemberCachePolicy;
+import net.dv8tion.jda.api.utils.cache.CacheFlag;
 import net.dynasty.discord.listener.ReadyListener;
+import net.dynasty.discord.listener.SlashListener;
 import net.dynasty.discord.logger.Logger;
 import net.dynasty.discord.maintenance.IMaintenanceObject;
 import net.dynasty.discord.maintenance.MaintenanceObject;
 import net.dynasty.discord.permission.IPermissionGroupLoader;
 import net.dynasty.discord.permission.PermissionGroupLoader;
-import net.dynasty.discord.player.IDiscordPlayer;
 import net.verany.api.Verany;
-import net.verany.api.group.AbstractPermissionGroup;
-import net.verany.api.json.JsonConfig;
 import net.verany.api.module.VeranyModule;
 import net.verany.api.module.VeranyProject;
 
 import java.awt.*;
 import java.io.*;
+import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.UUID;
@@ -36,7 +35,7 @@ import java.util.stream.Collectors;
 
 @Getter
 @Setter
-@VeranyModule(name = "DiscordBot", version = "2021.7.1", authors = {"Maximilian Wiegmann"})
+@VeranyModule(name = "DiscordBot", version = "2021.8.1", authors = {"Maximilian Wiegmann"})
 public class DiscordBot extends VeranyProject {
 
     public static DiscordBot INSTANCE;
@@ -61,21 +60,29 @@ public class DiscordBot extends VeranyProject {
     private void init() {
         String token = getResourceFileAsString();
 
-        registerHandler();
         EnumSet<GatewayIntent> intents = EnumSet.of(
                 GatewayIntent.GUILD_MESSAGES,
                 GatewayIntent.DIRECT_MESSAGES,
-                GatewayIntent.GUILD_MEMBERS
+                GatewayIntent.GUILD_VOICE_STATES,
+                GatewayIntent.GUILD_MESSAGE_REACTIONS,
+                GatewayIntent.GUILD_MEMBERS,
+                GatewayIntent.GUILD_PRESENCES,
+                GatewayIntent.GUILD_EMOJIS
         );
 
-        jda = JDABuilder.createLight(token).
+        jda = JDABuilder.createDefault(token).
+                enableIntents(intents).
                 setStatus(OnlineStatus.ONLINE).
                 addEventListeners(
-                        new MessageListener(),
+                        new SlashListener(),
                         new ReadyListener()
                 ).
+                setRawEventsEnabled(true).
+                setMemberCachePolicy(MemberCachePolicy.ALL).
+                enableCache(CacheFlag.VOICE_STATE).
                 setActivity(Activity.playing("Dynasty")).build();
 
+        jda.setAutoReconnect(true);
         jda.awaitReady();
 
         groupLoader = new PermissionGroupLoader();
@@ -92,7 +99,7 @@ public class DiscordBot extends VeranyProject {
     private void registerHandler() {
         EmbedBuilder couldNotFindCommand = new EmbedBuilder().setColor(Color.red).setDescription("Ich konnte diesen Befehl nicht finden!");
 
-        CommandManager.addCommandHandler(UUID.randomUUID(), container -> {
+        /*CommandManager.addCommandHandler(UUID.randomUUID(), container -> {
             if (container.getRaw().startsWith("-")) {
                 IDiscordPlayer user = Verany.getPlayer(String.valueOf(container.getEvent().getAuthor().getIdLong()), IDiscordPlayer.class);
                 if (CommandManager.getCommands().containsKey(container.getInvoke())) {
@@ -103,9 +110,14 @@ public class DiscordBot extends VeranyProject {
                             hasGroup = true;
                     if (commandGroups.size() != 0 && !hasGroup) {
                         container.getEvent().getChannel().sendMessageEmbeds(couldNotFindCommand.setFooter(user.getNickname(), user.getUser().getAvatarUrl()).build()).queue();
+                        System.out.println("no perm");
                         return;
                     }
                     AbstractCommand command = CommandManager.getCommands().get(container.getInvoke());
+                    if (command.getChannel() != -1 && command.getChannel() != container.getEvent().getChannel().getIdLong()) {
+                        container.getEvent().getChannel().sendMessageEmbeds(new EmbedBuilder().setDescription("Dieser Command darf nur in " + guild.getTextChannelById(command.getChannel()).getAsMention() + " ausgeführt werden!").build()).queue();
+                        return;
+                    }
                     if (!container.getEvent().getMessage().getAttachments().isEmpty()) {
                         CompletableFuture<File> downloadToFile = container.getEvent().getMessage().getAttachments().get(0).downloadToFile();
                         downloadToFile.whenComplete((file, throwable) -> {
@@ -119,7 +131,7 @@ public class DiscordBot extends VeranyProject {
                     container.getEvent().getChannel().sendMessageEmbeds(couldNotFindCommand.setFooter(user.getNickname(), user.getUser().getAvatarUrl()).build()).queue();
                 }
             }
-        });
+        });*/
     }
 
     private String getResourceFileAsString() throws IOException {

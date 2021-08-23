@@ -3,9 +3,9 @@ package net.dynasty.discord.command;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
-import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
+import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
+import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.dynasty.discord.player.IDiscordPlayer;
-import net.verany.api.group.AbstractPermissionGroup;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -18,12 +18,39 @@ import java.util.List;
 public abstract class AbstractCommand {
 
     private final String name;
+    private String description;
+    private long channel;
+    private final List<OptionData> optionData = new ArrayList<>();
+    private final List<String> aliases = new ArrayList<>();
+    private final List<Long> permissionGroups = new ArrayList<>();
+
+    public abstract void onExecute(IDiscordPlayer user, SlashCommandEvent event);
+
+    public void setAliases(String... aliases) {
+        this.aliases.addAll(Arrays.asList(aliases));
+    }
+
+    public void setPermissionGroups(Long... permissionGroups) {
+        this.permissionGroups.addAll(Arrays.asList(permissionGroups));
+    }
+
+    public void setPermissionGroups(List<Long> permissionGroups) {
+        this.permissionGroups.addAll(permissionGroups);
+    }
+
+    public void addOption(OptionData... option) {
+        optionData.addAll(List.of(option));
+    }
+
+    /*private final String name;
     private final List<String> aliases = new ArrayList<>();
     private final List<String> helpList = new ArrayList<>();
     private final List<Long> permissionGroups = new ArrayList<>();
-    private File attachedFile = null;
+    private String description;
+    //private File attachedFile = null;
+    private long channel = -1;
 
-    public abstract void onExecute(IDiscordPlayer user, MessageReceivedEvent event, String[] args);
+    public abstract void onExecute(IDiscordPlayer user, SlashCommandEvent event, String[] args);
 
     public void setAliases(String... aliases) {
         this.aliases.addAll(Arrays.asList(aliases));
@@ -39,6 +66,6 @@ public abstract class AbstractCommand {
 
     public void setPermissionGroups(List<Long> permissionGroups) {
         this.permissionGroups.addAll(permissionGroups);
-    }
+    }*/
 
 }

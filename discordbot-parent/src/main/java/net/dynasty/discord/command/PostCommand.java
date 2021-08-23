@@ -3,6 +3,7 @@ package net.dynasty.discord.command;
 import lombok.SneakyThrows;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.TextChannel;
+import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dynasty.discord.DiscordBot;
 import net.dynasty.discord.permission.PermissionGroupLoader;
@@ -28,12 +29,15 @@ public class PostCommand extends AbstractCommand {
     public PostCommand(String name) {
         super(name);
         setPermissionGroups(PermissionGroupLoader.MANAGEMENT, PermissionGroupLoader.MODERATOR, PermissionGroupLoader.CONCEPTION);
+        setChannel(871677780117565440L);
+        setDescription("Auch moin");
     }
 
     @SneakyThrows
     @Override
-    public void onExecute(IDiscordPlayer user, MessageReceivedEvent event, String[] args) {
-        if (args.length == 1) {
+    public void onExecute(IDiscordPlayer user, SlashCommandEvent event) {
+        System.out.println("run command");
+        /*if (args.length == 1) {
             if (args[0].equalsIgnoreCase("queue")) {
                 StringBuilder posts = new StringBuilder();
                 for (Post queuedPost : queuedPosts) {
@@ -44,29 +48,29 @@ public class PostCommand extends AbstractCommand {
                 embedBuilder.setDescription(posts.toString());
                 if (queuedPosts.isEmpty())
                     embedBuilder.setDescription("Nothing here..");
-                event.getChannel().sendMessage(embedBuilder.build()).queue();
+                event.replyEmbeds(embedBuilder.build()).queue();
                 return;
             }
-            File attachedFile = getAttachedFile();
+            *//*File attachedFile = getAttachedFile();
             if (attachedFile != null) {
                 if (attachedFile.getName().endsWith(".txt")) {
                     String message = IOUtils.toString(new FileInputStream(attachedFile), StandardCharsets.UTF_8);
                     try {
                         TextChannel channel = DiscordBot.INSTANCE.getGuild().getTextChannelById(Long.parseLong(args[0]));
                         if (channel == null) {
-                            event.getChannel().sendMessage(new EmbedBuilder().setDescription(MessageFormat.format("Could not find a channel with id {0}.", args[0])).setColor(Color.red).build()).queue();
+                            event.replyEmbeds(new EmbedBuilder().setDescription(MessageFormat.format("Could not find a channel with id {0}.", args[0])).setColor(Color.red).build()).queue();
                             return;
                         }
                         Post post = new Post(user, message, channel);
                         queuedPosts.add(post);
-                        event.getChannel().sendMessage(MessageFormat.format("Please confirm your post with ``-post confirm {0}``, or preview with ``-post preview {0}``", post.getId())).queue();
+                        event.reply(MessageFormat.format("Please confirm your post with ``-post confirm {0}``, or preview with ``-post preview {0}``", post.getId())).queue();
                     } catch (NumberFormatException e) {
-                        event.getChannel().sendMessage(new EmbedBuilder().setDescription(MessageFormat.format("{0} is not a real number!", args[0])).setColor(Color.red).build()).queue();
+                        event.replyEmbeds(new EmbedBuilder().setDescription(MessageFormat.format("{0} is not a real number!", args[0])).setColor(Color.red).build()).queue();
                         return;
                     }
                 }
                 return;
-            }
+            }*//*
             return;
         }
         if (args.length == 2) {
@@ -75,7 +79,7 @@ public class PostCommand extends AbstractCommand {
                 Post post = queuedPosts.stream().filter(queued -> queued.getId().equals(id)).findFirst().orElse(null);
                 if (post == null) return;
                 post.send();
-                event.getChannel().sendMessage(new EmbedBuilder().setDescription(user.getNickname() + " posted **" + post.getId() + "** in " + post.getTextChannel().getAsMention() + ".").setColor(Color.cyan).build()).queue();
+                event.replyEmbeds(new EmbedBuilder().setDescription(user.getNickname() + " posted **" + post.getId() + "** in " + post.getTextChannel().getAsMention() + ".").setColor(Color.cyan).build()).queue();
                 queuedPosts.remove(post);
                 return;
             }
@@ -86,6 +90,6 @@ public class PostCommand extends AbstractCommand {
                 post.send(event.getTextChannel());
                 return;
             }
-        }
+        }*/
     }
 }

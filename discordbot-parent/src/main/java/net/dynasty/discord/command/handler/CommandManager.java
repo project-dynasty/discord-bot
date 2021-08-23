@@ -1,5 +1,8 @@
 package net.dynasty.discord.command.handler;
 
+import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.interactions.commands.build.CommandData;
+import net.dynasty.discord.DiscordBot;
 import net.dynasty.discord.command.AbstractCommand;
 import net.dynasty.discord.command.CommandParser;
 
@@ -14,19 +17,22 @@ public class CommandManager {
     private static final HashMap<String, AbstractCommand> commands = new HashMap<>();
     private static final Map<UUID, Consumer<CommandParser.CommandContainer>> handler = new ConcurrentHashMap<>();
 
-    public static void addCommandHandler(UUID uuid, Consumer<CommandParser.CommandContainer> consumer) {
+    /*public static void addCommandHandler(UUID uuid, Consumer<CommandParser.CommandContainer> consumer) {
         handler.put(uuid, consumer);
-    }
-
-    public static void handleCommand(CommandParser.CommandContainer container) {
-        handler.forEach((uuid, consumer) -> consumer.accept(container));
-    }
+    }*/
 
     public static void addCommand(AbstractCommand command) {
         commands.put(command.getName(), command);
         if (command.getAliases() != null)
             for (String alias : command.getAliases())
                 commands.put(alias, command);
+
+        CommandData commandData = new CommandData(command.getName(), command.getDescription());
+        commandData.addOptions(command.getOptionData());
+        //commandData.setDefaultEnabled(true);
+        DiscordBot.INSTANCE.getGuild().upsertCommand(commandData).queue(success -> {
+            System.out.println("command registered");
+        });
     }
 
     public static HashMap<String, AbstractCommand> getCommands() {
