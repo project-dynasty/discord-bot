@@ -29,10 +29,17 @@ public class CommandManager {
 
         CommandData commandData = new CommandData(command.getName(), command.getDescription());
         commandData.addOptions(command.getOptionData());
-        //commandData.setDefaultEnabled(true);
         DiscordBot.INSTANCE.getGuild().upsertCommand(commandData).queue(success -> {
             System.out.println("command registered");
         });
+    }
+
+    public static AbstractCommand getCommandByName(String name) {
+        return commands.getOrDefault(name, null);
+    }
+
+    public static AbstractCommand getCommandByButtonId(String id) {
+        return commands.values().stream().filter(abstractCommand -> abstractCommand.getBtnId().equals(id)).findFirst().orElse(null);
     }
 
     public static HashMap<String, AbstractCommand> getCommands() {

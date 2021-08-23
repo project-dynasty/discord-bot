@@ -3,9 +3,11 @@ package net.dynasty.discord.command;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import net.dv8tion.jda.api.events.interaction.ButtonClickEvent;
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.dynasty.discord.player.IDiscordPlayer;
+import net.verany.api.Verany;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -23,8 +25,13 @@ public abstract class AbstractCommand {
     private final List<OptionData> optionData = new ArrayList<>();
     private final List<String> aliases = new ArrayList<>();
     private final List<Long> permissionGroups = new ArrayList<>();
+    private final String btnId = Verany.generate(10);
 
     public abstract void onExecute(IDiscordPlayer user, SlashCommandEvent event);
+
+    public void onButtonClick(IDiscordPlayer user, ButtonClickEvent clickEvent, String name) {
+
+    }
 
     public void setAliases(String... aliases) {
         this.aliases.addAll(Arrays.asList(aliases));
@@ -40,6 +47,10 @@ public abstract class AbstractCommand {
 
     public void addOption(OptionData... option) {
         optionData.addAll(List.of(option));
+    }
+
+    public String buttonName(String name) {
+        return btnId + "_" + name;
     }
 
     /*private final String name;
