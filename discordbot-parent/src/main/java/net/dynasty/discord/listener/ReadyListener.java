@@ -5,6 +5,7 @@ import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.events.ReadyEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dynasty.discord.DiscordBot;
+import net.dynasty.discord.command.MaintenanceCommand;
 import net.dynasty.discord.command.PostCommand;
 import net.dynasty.discord.command.handler.CommandManager;
 import net.dynasty.discord.player.DiscordPlayer;
@@ -25,6 +26,7 @@ public class ReadyListener extends ListenerAdapter {
         });*/
 
         CommandManager.addCommand(new PostCommand("post"));
+        CommandManager.addCommand(new MaintenanceCommand("maintenance"));
 
         System.out.println("Loading member...");
         long timestamp = System.currentTimeMillis();
