@@ -34,7 +34,10 @@ public class PermissionObject implements IPermissionObject {
 
     @Override
     public boolean hasDiscordRank(long group) {
-        return discordPlayer.getMember().getRoles().stream().anyMatch(role -> role.getIdLong() == group);
+        boolean hasRole = discordPlayer.getMember().getRoles().stream().anyMatch(role -> role.getIdLong() == group);
+        if(!hasRole)
+            hasRole = discordPlayer.getMember().getRoles().stream().anyMatch(role -> role.getIdLong() == DiscordBot.INSTANCE.getGroupLoader().getDiscordId(group));
+        return hasRole;
     }
 
     /*@Override
