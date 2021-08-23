@@ -20,7 +20,7 @@ public abstract class AbstractCommand {
     private final String name;
     private final List<String> aliases = new ArrayList<>();
     private final List<String> helpList = new ArrayList<>();
-    private final List<AbstractPermissionGroup> permissionGroups = new ArrayList<>();
+    private final List<Long> permissionGroups = new ArrayList<>();
     private File attachedFile = null;
 
     public abstract void onExecute(IDiscordPlayer user, MessageReceivedEvent event, String[] args);
@@ -33,11 +33,11 @@ public abstract class AbstractCommand {
         this.helpList.add(help);
     }
 
-    public void setPermissionGroups(AbstractPermissionGroup... permissionGroups) {
+    public void setPermissionGroups(Long... permissionGroups) {
         this.permissionGroups.addAll(Arrays.asList(permissionGroups));
     }
 
-    public void setPermissionGroups(List<AbstractPermissionGroup> permissionGroups) {
+    public void setPermissionGroups(List<Long> permissionGroups) {
         this.permissionGroups.addAll(permissionGroups);
     }
 

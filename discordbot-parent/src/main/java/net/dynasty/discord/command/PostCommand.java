@@ -5,6 +5,7 @@ import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dynasty.discord.DiscordBot;
+import net.dynasty.discord.permission.PermissionGroupLoader;
 import net.dynasty.discord.player.IDiscordPlayer;
 import net.dynasty.discord.post.Post;
 import org.apache.commons.io.IOUtils;
@@ -26,6 +27,7 @@ public class PostCommand extends AbstractCommand {
 
     public PostCommand(String name) {
         super(name);
+        setPermissionGroups(PermissionGroupLoader.MANAGEMENT, PermissionGroupLoader.MODERATOR, PermissionGroupLoader.CONCEPTION);
     }
 
     @SneakyThrows

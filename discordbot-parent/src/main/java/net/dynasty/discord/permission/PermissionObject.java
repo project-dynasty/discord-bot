@@ -37,8 +37,8 @@ public class PermissionObject implements IPermissionObject {
         return discordPlayer.getMember().getRoles().stream().anyMatch(role -> role.getIdLong() == group);
     }
 
-    @Override
-    public List<DiscordPermissionGroup> getGroups() {
+    /*@Override
+    public List<Long> getGroups() {
         return DiscordPermissionGroup.VALUES.stream().filter(discordPermissionGroup -> hasDiscordRank(discordPermissionGroup.getDiscordId())).collect(Collectors.toList());
     }
 
@@ -52,7 +52,7 @@ public class PermissionObject implements IPermissionObject {
             }
         }
         return isMember;
-    }
+    }*/
 
     private Role getRole(long id) {
         return DiscordBot.INSTANCE.getJda().getRoleById(id);

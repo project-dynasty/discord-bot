@@ -10,8 +10,8 @@ public interface IPermissionObject extends IDefault<Long> {
 
     boolean hasDiscordRank(long group);
 
-    List<DiscordPermissionGroup> getGroups();
+    //List<Long> getGroups();
 
-    boolean isTeamMember();
+    //boolean isTeamMember();
 
 }
