@@ -21,24 +21,17 @@ public class ReadyListener extends ListenerAdapter {
         Guild guild = DiscordBot.INSTANCE.getJda().getGuildById(870339990335406090L);
         DiscordBot.INSTANCE.setGuild(guild);
 
-        /*DiscordBot.INSTANCE.getPermissionLoader().loadGroups(() -> {
-            CommandManager.addCommand(new ApplyCommand("apply"));
-            CommandManager.addCommand(new UpdateCommand("update"));
-        });*/
-
-        //CommandManager.addCommand(new PostCommand("post"));
-
         System.out.println("Loading member...");
         long timestamp = System.currentTimeMillis();
-        if(guild == null) {
+        if (guild == null) {
             System.out.println("guild is null");
             return;
         }
+
         for (Command command : guild.retrieveCommands().complete()) {
-            guild.deleteCommandById(command.getIdLong()).queue();
+            command.delete().queue();
         }
         guild.updateCommands().queue();
-
         CommandManager.addCommand(new MaintenanceCommand("maintenance"));
 
         guild.loadMembers(member -> {

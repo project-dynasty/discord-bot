@@ -3,6 +3,13 @@ package net.dynasty.discord.maintenance;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
+import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.Permission;
+import net.dv8tion.jda.api.entities.Category;
+import net.dv8tion.jda.api.entities.PermissionOverride;
+import net.dv8tion.jda.api.entities.TextChannel;
+import net.dv8tion.jda.api.entities.VoiceChannel;
+import net.dv8tion.jda.internal.entities.CategoryImpl;
 import net.dynasty.discord.DiscordBot;
 import net.verany.api.json.JsonConfig;
 import net.verany.api.loader.LoadObject;
@@ -10,12 +17,16 @@ import net.verany.api.loader.config.ConfigLoader;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 public class MaintenanceObject extends ConfigLoader implements IMaintenanceObject {
 
     public MaintenanceObject() {
         super(new JsonConfig(new File("module/DiscordBot/maintenance.json")));
-        load(new LoadInfo<>("maintenance", MaintenanceData.class, new MaintenanceData(false, -1, null)));
+        load(new LoadInfo<>("maintenance", MaintenanceData.class, new MaintenanceData(false, -1, null, -1)));
 
         if (shouldEnableMaintenance() && !isMaintenance())
             enableMaintenance(getReason());
@@ -33,6 +44,28 @@ public class MaintenanceObject extends ConfigLoader implements IMaintenanceObjec
         getDataOptional(MaintenanceData.class).get().setMaintenance(true);
         getDataOptional(MaintenanceData.class).get().setReason(reason);
 
+        for (TextChannel textChannel : DiscordBot.INSTANCE.getGuild().getTextChannels()) {
+            for (PermissionOverride permissionOverride : textChannel.getPermissionOverrides()) {
+                if (permissionOverride.getManager().getAllowedPermissions().contains(Permission.VIEW_CHANNEL)) {
+                    permissionOverride.getManager().deny(Permission.VIEW_CHANNEL).queue();
+                }
+            }
+        }
+        for (VoiceChannel voiceChannel : DiscordBot.INSTANCE.getGuild().getVoiceChannels()) {
+            for (PermissionOverride permissionOverride : voiceChannel.getPermissionOverrides()) {
+                if (permissionOverride.getManager().getAllowedPermissions().contains(Permission.VIEW_CHANNEL)) {
+                    permissionOverride.getManager().deny(Permission.VIEW_CHANNEL).queue();
+                }
+            }
+        }
+
+        TextChannel channel = DiscordBot.INSTANCE.getGuild().createTextChannel("maintenance").complete();
+        for (PermissionOverride permissionOverride : channel.getPermissionOverrides()) {
+            permissionOverride.getManager().deny(Permission.MESSAGE_WRITE, Permission.MESSAGE_MANAGE).queue();
+        }
+        channel.sendMessageEmbeds(new EmbedBuilder().setTitle("Maintenance", "https://dynasty.net/warum_maintenance?").setDescription(getReason()).setFooter("Dynasty.net " + new SimpleDateFormat("dd.MM.yyyy").format(System.currentTimeMillis()), DiscordBot.INSTANCE.getJda().getSelfUser().getAvatarUrl()).build()).queue();
+
+        setMaintenanceChannel(channel);
 
     }
 
@@ -40,6 +73,19 @@ public class MaintenanceObject extends ConfigLoader implements IMaintenanceObjec
     public void disableMaintenance() {
         if (getDataOptional(MaintenanceData.class).isEmpty()) return;
         getDataOptional(MaintenanceData.class).get().setMaintenance(false);
+
+        getMaintenanceChannel().delete().queue();
+
+        for (TextChannel textChannel : DiscordBot.INSTANCE.getGuild().getTextChannels()) {
+            for (PermissionOverride permissionOverride : textChannel.getPermissionOverrides()) {
+                permissionOverride.getManager().grant(Permission.VIEW_CHANNEL).queue();
+            }
+        }
+        for (VoiceChannel voiceChannel : DiscordBot.INSTANCE.getGuild().getVoiceChannels()) {
+            for (PermissionOverride permissionOverride : voiceChannel.getPermissionOverrides()) {
+                permissionOverride.getManager().grant(Permission.VIEW_CHANNEL).queue();
+            }
+        }
     }
 
     @Override
@@ -72,6 +118,23 @@ public class MaintenanceObject extends ConfigLoader implements IMaintenanceObjec
     }
 
     @Override
+    public TextChannel getMaintenanceChannel() {
+        if (getDataOptional(MaintenanceData.class).isEmpty()) return null;
+        if (getDataOptional(MaintenanceData.class).get().getMaintenanceChannel() == -1) return null;
+        return DiscordBot.INSTANCE.getGuild().getTextChannelById(getDataOptional(MaintenanceData.class).get().getMaintenanceChannel());
+    }
+
+    @Override
+    public void setMaintenanceChannel(TextChannel channel) {
+        if (getDataOptional(MaintenanceData.class).isEmpty()) return;
+        if (channel == null) {
+            getDataOptional(MaintenanceData.class).get().setMaintenanceChannel(-1);
+            return;
+        }
+        getDataOptional(MaintenanceData.class).get().setMaintenanceChannel(channel.getIdLong());
+    }
+
+    @Override
     public @Nullable String getReason() {
         if (getDataOptional(MaintenanceData.class).isEmpty()) return null;
         return getDataOptional(MaintenanceData.class).get().getReason();
@@ -84,5 +147,6 @@ public class MaintenanceObject extends ConfigLoader implements IMaintenanceObjec
         private boolean maintenance;
         private long scheduledMaintenance;
         private String reason;
+        private long maintenanceChannel;
     }
 }

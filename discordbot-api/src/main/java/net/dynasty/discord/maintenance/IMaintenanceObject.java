@@ -1,5 +1,6 @@
 package net.dynasty.discord.maintenance;
 
+import net.dv8tion.jda.api.entities.TextChannel;
 import org.jetbrains.annotations.Nullable;
 
 public interface IMaintenanceObject {
@@ -19,6 +20,10 @@ public interface IMaintenanceObject {
     long getStartTimestamp();
 
     long getTimeLeft();
+
+    TextChannel getMaintenanceChannel();
+
+    void setMaintenanceChannel(TextChannel channel);
 
     @Nullable
     String getReason();
