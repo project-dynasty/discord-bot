@@ -28,11 +28,10 @@ public class ReadyListener extends ListenerAdapter {
             return;
         }
 
-        for (Command command : guild.retrieveCommands().complete()) {
-            command.delete().queue();
-        }
-        guild.updateCommands().queue();
-        CommandManager.addCommand(new MaintenanceCommand("maintenance"));
+        /*CommandManager.addCommand(new MaintenanceCommand("maintenance"));
+        CommandManager.addCommand(new PostCommand("post"));*/
+
+        CommandManager.loadCommands();
 
         guild.loadMembers(member -> {
 
@@ -43,6 +42,7 @@ public class ReadyListener extends ListenerAdapter {
         }).onSuccess(unused -> {
             int took = Math.toIntExact((System.currentTimeMillis() - timestamp) / 1000);
             System.out.println("Loading complete! (Took " + took + "s)");
+
         });
     }
 }

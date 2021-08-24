@@ -2,9 +2,13 @@ package net.dynasty.discord.command.handler;
 
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
+import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
+import net.dv8tion.jda.api.requests.restaction.CommandListUpdateAction;
 import net.dynasty.discord.DiscordBot;
 import net.dynasty.discord.command.AbstractCommand;
 import net.dynasty.discord.command.CommandParser;
+import net.dynasty.discord.command.MaintenanceCommand;
+import net.dynasty.discord.command.PostCommand;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -15,13 +19,14 @@ import java.util.function.Consumer;
 public class CommandManager {
 
     private static final HashMap<String, AbstractCommand> commands = new HashMap<>();
-    private static final Map<UUID, Consumer<CommandParser.CommandContainer>> handler = new ConcurrentHashMap<>();
 
-    /*public static void addCommandHandler(UUID uuid, Consumer<CommandParser.CommandContainer> consumer) {
-        handler.put(uuid, consumer);
-    }*/
+    public static void loadCommands() {
+        CommandListUpdateAction commands = DiscordBot.INSTANCE.getGuild().updateCommands();
+        commands.addCommands(addCommand(new MaintenanceCommand("maintenance")), addCommand(new PostCommand("post")));
+        commands.queue();
+    }
 
-    public static void addCommand(AbstractCommand command) {
+    public static CommandData addCommand(AbstractCommand command) {
         commands.put(command.getName(), command);
         if (command.getAliases() != null)
             for (String alias : command.getAliases())
@@ -29,9 +34,7 @@ public class CommandManager {
 
         CommandData commandData = new CommandData(command.getName(), command.getDescription());
         commandData.addOptions(command.getOptionData());
-        DiscordBot.INSTANCE.getGuild().upsertCommand(commandData).queue(success -> {
-            System.out.println("command registered");
-        });
+        return commandData;
     }
 
     public static AbstractCommand getCommandByName(String name) {
@@ -42,11 +45,4 @@ public class CommandManager {
         return commands.values().stream().filter(abstractCommand -> abstractCommand.getBtnId().equals(id)).findFirst().orElse(null);
     }
 
-    public static HashMap<String, AbstractCommand> getCommands() {
-        return commands;
-    }
-
-    public static Map<UUID, Consumer<CommandParser.CommandContainer>> getHandler() {
-        return handler;
-    }
 }

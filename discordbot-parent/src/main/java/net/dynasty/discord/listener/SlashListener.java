@@ -37,7 +37,7 @@ public class SlashListener extends ListenerAdapter {
 
     @Override
     public void onButtonClick(@NotNull ButtonClickEvent event) {
-        if (event.getComponentId().split("_").length != 2) return;
+        if (event.getComponentId().split("_").length < 2) return;
         AbstractCommand command = CommandManager.getCommandByButtonId(event.getComponentId().split("_")[0]);
         if (command == null) return;
         IDiscordPlayer user = Verany.getPlayer(String.valueOf(event.getUser().getIdLong()), IDiscordPlayer.class);
