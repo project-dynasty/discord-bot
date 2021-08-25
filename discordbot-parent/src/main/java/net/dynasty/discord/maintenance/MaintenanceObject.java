@@ -69,6 +69,13 @@ public class MaintenanceObject extends ConfigLoader implements IMaintenanceObjec
 
     }
 
+    private void saveChannels() {
+        List<String> permissionList = new ArrayList<>();
+        for (TextChannel textChannel : DiscordBot.INSTANCE.getGuild().getTextChannels()) {
+
+        }
+    }
+
     @Override
     public void disableMaintenance() {
         if (getDataOptional(MaintenanceData.class).isEmpty()) return;
@@ -148,5 +155,7 @@ public class MaintenanceObject extends ConfigLoader implements IMaintenanceObjec
         private long scheduledMaintenance;
         private String reason;
         private long maintenanceChannel;
+        private final List<String> textChannel = new ArrayList<>();
+        private final List<String> voiceChannel = new ArrayList<>();
     }
 }
