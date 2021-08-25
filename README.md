@@ -23,6 +23,7 @@ gh repo clone project-dynasty/discord-bot
 ## Branches:
 * `production`: Produktionsbuild (Wird automatisch auf die entsprechenden Dienste deployed)
 * `release/*`: Release Builds (z.B. `release/2021.8.2`, eine stabil laufende Version benannt nach dem Zeitpunkt)
+* `bug/*`: Bug fix Branch (z.B. `bug/meta-bug`, für Bug fixes)
 * `feature/*`: Feature Update Branch (z.B. `feature/level-update`, für große Updates)
 * `dev/*`: Developer spezifischer Branch (z.B. `dev/nicokempe`, für kleine Änderungen und nur temporär ausgelegt)
 
