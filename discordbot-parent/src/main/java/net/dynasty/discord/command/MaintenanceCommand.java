@@ -51,15 +51,20 @@ public class MaintenanceCommand extends AbstractCommand {
     @Override
     public void onButtonClick(IDiscordPlayer discordPlayer, ButtonClickEvent clickEvent, String name) {
         switch (name) {
-            case "enable" -> {
+            case "enable": {
                 DiscordBot.INSTANCE.getMaintenanceObject().enableMaintenance(reasonMap.get(discordPlayer));
                 clickEvent.replyEmbeds(new EmbedBuilder().setDescription("Enabled maintenance").setColor(Color.green).build()).setEphemeral(true).queue();
+                break;
             }
-            case "disable" -> {
+            case "disable": {
                 DiscordBot.INSTANCE.getMaintenanceObject().disableMaintenance();
                 clickEvent.replyEmbeds(new EmbedBuilder().setDescription("Disabled maintenance success").setColor(Color.green).build()).setEphemeral(true).queue();
+                break;
             }
-            case "cancel" -> clickEvent.deferReply().setEphemeral(true).queue();
+            case "cancel": {
+                clickEvent.deferReply().setEphemeral(true).queue();
+                break;
+            }
         }
     }
 }
