@@ -16,6 +16,7 @@ public class MessageListener extends ListenerAdapter {
 
     @Override
     public void onGuildMessageReceived(@NotNull GuildMessageReceivedEvent event) {
+        if (event.getMember() == null) return;
         IDiscordPlayer user = Dynasty.getPlayer(String.valueOf(event.getMember().getIdLong()), IDiscordPlayer.class);
 
         Post imagePost = PostCommand.isPostingImage(user);
