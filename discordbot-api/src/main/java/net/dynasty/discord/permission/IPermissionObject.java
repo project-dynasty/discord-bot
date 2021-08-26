@@ -1,8 +1,6 @@
 package net.dynasty.discord.permission;
 
-import net.verany.api.interfaces.IDefault;
-
-import java.util.List;
+import net.dynasty.api.interfaces.IDefault;
 
 public interface IPermissionObject extends IDefault<Long> {
 

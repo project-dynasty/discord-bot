@@ -6,10 +6,9 @@ import lombok.Setter;
 import net.dv8tion.jda.api.events.interaction.ButtonClickEvent;
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
+import net.dynasty.api.Dynasty;
 import net.dynasty.discord.player.IDiscordPlayer;
-import net.verany.api.Verany;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -25,7 +24,7 @@ public abstract class AbstractCommand {
     private final List<OptionData> optionData = new ArrayList<>();
     private final List<String> aliases = new ArrayList<>();
     private final List<Long> permissionGroups = new ArrayList<>();
-    private final String btnId = Verany.generate(10);
+    private final String btnId = Dynasty.generateString(10);
 
     public abstract void onExecute(IDiscordPlayer user, SlashCommandEvent event);
 

@@ -1,10 +1,10 @@
 package net.dynasty.discord;
 
-import net.verany.api.module.VeranyProject;
+import net.dynasty.api.module.DynastyPlugin;
 
 public class Main {
 
-    private static VeranyProject bot;
+    private static DynastyPlugin bot;
 
     public static void main(String[] args) {
         bot = new DiscordBot();

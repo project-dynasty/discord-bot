@@ -5,15 +5,13 @@ import lombok.Getter;
 import lombok.Setter;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
-import net.dv8tion.jda.api.entities.Category;
 import net.dv8tion.jda.api.entities.PermissionOverride;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.entities.VoiceChannel;
-import net.dv8tion.jda.internal.entities.CategoryImpl;
+import net.dynasty.api.json.JsonConfig;
+import net.dynasty.api.loader.LoadObject;
+import net.dynasty.api.loader.config.ConfigLoader;
 import net.dynasty.discord.DiscordBot;
-import net.verany.api.json.JsonConfig;
-import net.verany.api.loader.LoadObject;
-import net.verany.api.loader.config.ConfigLoader;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;

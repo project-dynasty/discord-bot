@@ -4,10 +4,10 @@ import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import net.dynasty.api.Dynasty;
 import net.dynasty.discord.command.PostCommand;
 import net.dynasty.discord.player.IDiscordPlayer;
 import net.dynasty.discord.post.Post;
-import net.verany.api.Verany;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.concurrent.atomic.AtomicInteger;
@@ -16,7 +16,7 @@ public class MessageListener extends ListenerAdapter {
 
     @Override
     public void onGuildMessageReceived(@NotNull GuildMessageReceivedEvent event) {
-        IDiscordPlayer user = Verany.getPlayer(String.valueOf(event.getMember().getIdLong()), IDiscordPlayer.class);
+        IDiscordPlayer user = Dynasty.getPlayer(String.valueOf(event.getMember().getIdLong()), IDiscordPlayer.class);
 
         Post imagePost = PostCommand.isPostingImage(user);
         if (imagePost != null) {

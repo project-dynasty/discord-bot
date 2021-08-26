@@ -5,11 +5,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.MessageChannel;
-import net.dv8tion.jda.api.entities.TextChannel;
-import net.dv8tion.jda.api.utils.AttachmentOption;
-import net.dynasty.discord.DiscordBot;
+import net.dynasty.api.Dynasty;
 import net.dynasty.discord.player.IDiscordPlayer;
-import net.verany.api.Verany;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -20,7 +17,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class Post {
 
-    private final String id = Verany.generate(5);
+    private final String id = Dynasty.generateString(5);
     private final long timestamp = System.currentTimeMillis();
     private final IDiscordPlayer sender;
     private final String message;

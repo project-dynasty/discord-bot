@@ -3,8 +3,8 @@ package net.dynasty.discord.player;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.User;
+import net.dynasty.api.interfaces.IDefault;
 import net.dynasty.discord.permission.IPermissionObject;
-import net.verany.api.interfaces.IDefault;
 
 public interface IDiscordPlayer extends IDefault<Long> {
 

@@ -7,7 +7,6 @@ import net.dv8tion.jda.api.entities.MessageReaction;
 import net.dv8tion.jda.api.entities.User;
 import net.dynasty.discord.permission.IPermissionObject;
 import net.dynasty.discord.permission.PermissionObject;
-import net.verany.api.module.VeranyProject;
 
 import java.io.File;
 import java.util.HashMap;

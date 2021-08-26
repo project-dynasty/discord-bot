@@ -5,13 +5,13 @@ import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.events.ReadyEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.interactions.commands.Command;
+import net.dynasty.api.Dynasty;
 import net.dynasty.discord.DiscordBot;
 import net.dynasty.discord.command.MaintenanceCommand;
 import net.dynasty.discord.command.PostCommand;
 import net.dynasty.discord.command.handler.CommandManager;
 import net.dynasty.discord.player.DiscordPlayer;
 import net.dynasty.discord.player.IDiscordPlayer;
-import net.verany.api.Verany;
 import org.jetbrains.annotations.NotNull;
 
 public class ReadyListener extends ListenerAdapter {
@@ -38,7 +38,7 @@ public class ReadyListener extends ListenerAdapter {
             System.out.println(member.getEffectiveName());
             IDiscordPlayer discordPlayer = new DiscordPlayer(member);
             discordPlayer.load(member.getIdLong());
-            Verany.setPlayer(IDiscordPlayer.class, discordPlayer);
+            Dynasty.setPlayer(IDiscordPlayer.class, discordPlayer);
         }).onSuccess(unused -> {
             int took = Math.toIntExact((System.currentTimeMillis() - timestamp) / 1000);
             System.out.println("Loading complete! (Took " + took + "s)");

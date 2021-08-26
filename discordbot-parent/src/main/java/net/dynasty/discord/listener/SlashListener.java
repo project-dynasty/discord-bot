@@ -5,12 +5,12 @@ import net.dv8tion.jda.api.events.interaction.ButtonClickEvent;
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import net.dynasty.api.Dynasty;
 import net.dynasty.discord.DiscordBot;
 import net.dynasty.discord.command.AbstractCommand;
 import net.dynasty.discord.command.CommandParser;
 import net.dynasty.discord.command.handler.CommandManager;
 import net.dynasty.discord.player.IDiscordPlayer;
-import net.verany.api.Verany;
 import org.jetbrains.annotations.NotNull;
 
 import java.awt.*;
@@ -26,13 +26,12 @@ public class SlashListener extends ListenerAdapter {
             event.replyEmbeds(new EmbedBuilder().setColor(Color.red).setDescription("Dieser Command darf nur in " + DiscordBot.INSTANCE.getGuild().getTextChannelById(command.getChannel()).getAsMention() + " ausgeführt werden!").build()).setEphemeral(true).queue();
             return;
         }
-        IDiscordPlayer user = Verany.getPlayer(String.valueOf(event.getUser().getIdLong()), IDiscordPlayer.class);
+        IDiscordPlayer user = Dynasty.getPlayer(String.valueOf(event.getUser().getIdLong()), IDiscordPlayer.class);
         if (!hasPermission(user, command)) {
             event.replyEmbeds(new EmbedBuilder().setColor(Color.red).setDescription("Ich konnte diesen Befehl nicht finden!").setFooter(user.getNickname(), user.getUser().getAvatarUrl()).build()).setEphemeral(true).queue();
             return;
         }
         command.onExecute(user, event);
-        event.deferReply().queue();
     }
 
     @Override
@@ -40,12 +39,11 @@ public class SlashListener extends ListenerAdapter {
         if (event.getComponentId().split("_").length < 2) return;
         AbstractCommand command = CommandManager.getCommandByButtonId(event.getComponentId().split("_")[0]);
         if (command == null) return;
-        IDiscordPlayer user = Verany.getPlayer(String.valueOf(event.getUser().getIdLong()), IDiscordPlayer.class);
+        IDiscordPlayer user = Dynasty.getPlayer(String.valueOf(event.getUser().getIdLong()), IDiscordPlayer.class);
         if (!hasPermission(user, command)) {
             return;
         }
         command.onButtonClick(user, event, event.getComponentId().split("_")[1]);
-        event.deferReply().queue();
     }
 
     private boolean hasPermission(IDiscordPlayer user, AbstractCommand command) {

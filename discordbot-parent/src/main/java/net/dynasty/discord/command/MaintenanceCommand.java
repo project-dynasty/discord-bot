@@ -3,8 +3,6 @@ package net.dynasty.discord.command;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.events.interaction.ButtonClickEvent;
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
-import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
-import net.dv8tion.jda.api.interactions.commands.Command;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
@@ -42,12 +40,12 @@ public class MaintenanceCommand extends AbstractCommand {
         String name = isEnabled ? "enable" : "disable";
 
         if(isEnabled && DiscordBot.INSTANCE.getMaintenanceObject().isMaintenance()) {
-            event.replyEmbeds(new EmbedBuilder().setTitle("Maintenance").setDescription("Maintenance is already enabled!").setColor(Color.red).build()).addActionRow(Button.danger(buttonName("disable"), "Disable"), Button.secondary(buttonName("cancel"), "Cancel")).setEphemeral(true).queue();
+            event.replyEmbeds(new EmbedBuilder().setTitle("Maintenance").setDescription("Maintenance is already enabled!").setColor(Color.red).build()).addActionRow(Button.danger(buttonName("disable"), "Disable")).setEphemeral(true).queue();
             return;
         }
 
         if(!isEnabled && !DiscordBot.INSTANCE.getMaintenanceObject().isMaintenance()) {
-            event.replyEmbeds(new EmbedBuilder().setTitle("Maintenance").setDescription("Maintenance is already disabled!").setColor(Color.red).build()).addActionRow(Button.danger(buttonName("enable"), "Enable"), Button.secondary(buttonName("cancel"), "Cancel")).setEphemeral(true).queue();
+            event.replyEmbeds(new EmbedBuilder().setTitle("Maintenance").setDescription("Maintenance is already disabled!").setColor(Color.red).build()).addActionRow(Button.danger(buttonName("enable"), "Enable")).setEphemeral(true).queue();
             return;
         }
 
@@ -75,7 +73,6 @@ public class MaintenanceCommand extends AbstractCommand {
             }
             case "cancel": {
                 clickEvent.editMessageEmbeds(new EmbedBuilder().setColor(Color.DARK_GRAY).setTitle("Maintenance").setDescription("~~" + clickEvent.getMessage().getEmbeds().get(0).getDescription() + "~~").build()).setActionRow(Button.success(buttonName("confirm"), "Confirm").asDisabled(), Button.secondary(buttonName("cancel"), "Cancel").asDisabled()).queue();
-                clickEvent.deferEdit().queue();
                 break;
             }
         }

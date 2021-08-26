@@ -3,11 +3,10 @@ package net.dynasty.discord.permission;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import net.dv8tion.jda.api.entities.Role;
+import net.dynasty.api.json.JsonConfig;
+import net.dynasty.api.loader.LoadObject;
+import net.dynasty.api.loader.config.ConfigLoader;
 import net.dynasty.discord.DiscordBot;
-import net.verany.api.json.AbstractJsonConfig;
-import net.verany.api.json.JsonConfig;
-import net.verany.api.loader.LoadObject;
-import net.verany.api.loader.config.ConfigLoader;
 
 import java.io.File;
 import java.util.HashMap;
