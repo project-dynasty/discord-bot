@@ -22,12 +22,6 @@
             <artifactId>discordbot-api</artifactId>
             <version>2021.8.1</version>
         </dependency>
-
-        <dependency>
-            <groupId>net.dynasty</groupId>
-            <artifactId>core-api</artifactId>
-            <version>2021.8.1</version>
-        </dependency>
     </dependencies>
 
 </project>
