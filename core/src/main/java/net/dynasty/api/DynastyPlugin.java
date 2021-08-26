@@ -2,8 +2,8 @@ package net.dynasty.api;
 
 import lombok.Getter;
 import lombok.Setter;
-import net.dynasty.api.module.DynastyModule;
-import net.dynasty.api.module.DynastyProject;
+import net.dynasty.api.plugin.DynastyModule;
+import net.dynasty.api.plugin.DynastyProject;
 
 import java.io.Serializable;
 

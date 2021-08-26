@@ -13,7 +13,7 @@ import net.dv8tion.jda.api.utils.MemberCachePolicy;
 import net.dv8tion.jda.api.utils.cache.CacheFlag;
 import net.dynasty.api.Dynasty;
 import net.dynasty.api.DynastyPlugin;
-import net.dynasty.api.module.DynastyModule;
+import net.dynasty.api.plugin.DynastyModule;
 import net.dynasty.discord.listener.MessageListener;
 import net.dynasty.discord.listener.ReadyListener;
 import net.dynasty.discord.listener.SlashListener;
