@@ -15,6 +15,8 @@ import net.dynasty.discord.player.IDiscordPlayer;
 
 import java.awt.*;
 import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -39,12 +41,22 @@ public class MaintenanceCommand extends AbstractCommand {
         boolean isEnabled = enabledMapping.getAsBoolean();
         String name = isEnabled ? "enable" : "disable";
 
+        if(isEnabled && DiscordBot.INSTANCE.getMaintenanceObject().isMaintenance()) {
+            event.replyEmbeds(new EmbedBuilder().setTitle("Maintenance").setDescription("Maintenance is already enabled!").setColor(Color.red).build()).addActionRow(Button.danger(buttonName("disable"), "Disable"), Button.secondary(buttonName("cancel"), "Cancel")).setEphemeral(true).queue();
+            return;
+        }
+
+        if(!isEnabled && !DiscordBot.INSTANCE.getMaintenanceObject().isMaintenance()) {
+            event.replyEmbeds(new EmbedBuilder().setTitle("Maintenance").setDescription("Maintenance is already disabled!").setColor(Color.red).build()).addActionRow(Button.danger(buttonName("enable"), "Enable"), Button.secondary(buttonName("cancel"), "Cancel")).setEphemeral(true).queue();
+            return;
+        }
+
         if (reasonMapping != null) {
             String reason = reasonMapping.getAsString();
             reasonMap.put(user, reason);
         }
 
-        event.replyEmbeds(new EmbedBuilder().setDescription(MessageFormat.format("Are you sure {0} the maintenance?", name)).setColor(Color.cyan).build()).addActionRow(Button.success(buttonName(name), "Confirm"), Button.secondary(buttonName("cancel"), "Cancel")).setEphemeral(true).queue();
+        event.replyEmbeds(new EmbedBuilder().setTitle("Maintenance").setDescription(MessageFormat.format("Are you sure {0} the maintenance?", name)).setColor(Color.cyan).build()).addActionRow(Button.success(buttonName(name), "Confirm"), Button.secondary(buttonName("cancel"), "Cancel")).setEphemeral(true).queue();
 
     }
 
@@ -52,17 +64,18 @@ public class MaintenanceCommand extends AbstractCommand {
     public void onButtonClick(IDiscordPlayer discordPlayer, ButtonClickEvent clickEvent, String name) {
         switch (name) {
             case "enable": {
-                DiscordBot.INSTANCE.getMaintenanceObject().enableMaintenance(reasonMap.get(discordPlayer));
-                clickEvent.replyEmbeds(new EmbedBuilder().setDescription("Enabled maintenance").setColor(Color.green).build()).setEphemeral(true).queue();
+                DiscordBot.INSTANCE.getMaintenanceObject().enableMaintenance(reasonMap.getOrDefault(discordPlayer, "unknown"));
+                clickEvent.editMessageEmbeds(new EmbedBuilder().setTitle("Maintenance").setDescription("You enabled the maintenance").setColor(Color.green).build()).setActionRow(Button.danger(buttonName("disable"), "Disable")).queue();
                 break;
             }
             case "disable": {
                 DiscordBot.INSTANCE.getMaintenanceObject().disableMaintenance();
-                clickEvent.replyEmbeds(new EmbedBuilder().setDescription("Disabled maintenance success").setColor(Color.green).build()).setEphemeral(true).queue();
+                clickEvent.editMessageEmbeds(new EmbedBuilder().setTitle("Maintenance").setDescription("You disabled the maintenance").setColor(Color.green).build()).setActionRows(new ArrayList<>()).queue();
                 break;
             }
             case "cancel": {
-                clickEvent.deferReply().setEphemeral(true).queue();
+                clickEvent.editMessageEmbeds(new EmbedBuilder().setColor(Color.DARK_GRAY).setTitle("Maintenance").setDescription("~~" + clickEvent.getMessage().getEmbeds().get(0).getDescription() + "~~").build()).setActionRow(Button.success(buttonName("confirm"), "Confirm").asDisabled(), Button.secondary(buttonName("cancel"), "Cancel").asDisabled()).queue();
+                clickEvent.deferEdit().queue();
                 break;
             }
         }

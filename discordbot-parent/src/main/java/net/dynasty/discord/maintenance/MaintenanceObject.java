@@ -19,14 +19,16 @@ import org.jetbrains.annotations.Nullable;
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class MaintenanceObject extends ConfigLoader implements IMaintenanceObject {
 
     public MaintenanceObject() {
         super(new JsonConfig(new File("module/DiscordBot/maintenance.json")));
-        load(new LoadInfo<>("maintenance", MaintenanceData.class, new MaintenanceData(false, -1, null, -1)));
+        load(new LoadInfo<>("maintenance", MaintenanceData.class, new MaintenanceData(false, -1, null, -1, new ArrayList<>(), new ArrayList<>())));
 
         if (shouldEnableMaintenance() && !isMaintenance())
             enableMaintenance(getReason());
@@ -44,18 +46,16 @@ public class MaintenanceObject extends ConfigLoader implements IMaintenanceObjec
         getDataOptional(MaintenanceData.class).get().setMaintenance(true);
         getDataOptional(MaintenanceData.class).get().setReason(reason);
 
+        saveChannels();
+
         for (TextChannel textChannel : DiscordBot.INSTANCE.getGuild().getTextChannels()) {
             for (PermissionOverride permissionOverride : textChannel.getPermissionOverrides()) {
-                if (permissionOverride.getManager().getAllowedPermissions().contains(Permission.VIEW_CHANNEL)) {
-                    permissionOverride.getManager().deny(Permission.VIEW_CHANNEL).queue();
-                }
+                permissionOverride.getManager().deny(Permission.VIEW_CHANNEL).queue();
             }
         }
         for (VoiceChannel voiceChannel : DiscordBot.INSTANCE.getGuild().getVoiceChannels()) {
             for (PermissionOverride permissionOverride : voiceChannel.getPermissionOverrides()) {
-                if (permissionOverride.getManager().getAllowedPermissions().contains(Permission.VIEW_CHANNEL)) {
-                    permissionOverride.getManager().deny(Permission.VIEW_CHANNEL).queue();
-                }
+                permissionOverride.getManager().deny(Permission.VIEW_CHANNEL).queue();
             }
         }
 
@@ -63,16 +63,50 @@ public class MaintenanceObject extends ConfigLoader implements IMaintenanceObjec
         for (PermissionOverride permissionOverride : channel.getPermissionOverrides()) {
             permissionOverride.getManager().deny(Permission.MESSAGE_WRITE, Permission.MESSAGE_MANAGE).queue();
         }
-        channel.sendMessageEmbeds(new EmbedBuilder().setTitle("Maintenance", "https://dynasty.net/warum_maintenance?").setDescription(getReason()).setFooter("Dynasty.net " + new SimpleDateFormat("dd.MM.yyyy").format(System.currentTimeMillis()), DiscordBot.INSTANCE.getJda().getSelfUser().getAvatarUrl()).build()).queue();
+        channel.sendMessageEmbeds(new EmbedBuilder().setTitle("Maintenance", "https://dynasty.net/warum_maintenance?").setDescription("**Reason**:\n" + getReason()).setFooter("Dynasty.net " + new SimpleDateFormat("dd.MM.yyyy").format(System.currentTimeMillis()), DiscordBot.INSTANCE.getJda().getSelfUser().getAvatarUrl()).build()).queue();
 
         setMaintenanceChannel(channel);
 
     }
 
     private void saveChannels() {
-        List<String> permissionList = new ArrayList<>();
-        for (TextChannel textChannel : DiscordBot.INSTANCE.getGuild().getTextChannels()) {
+        List<PermissionOverride> oldTextChannelPermissionsArrayList = DiscordBot.INSTANCE.getGuild().getTextChannels().stream().flatMap(textChannel -> textChannel.getPermissionOverrides().stream()).collect(Collectors.toCollection(ArrayList::new));
+        List<PermissionOverride> oldVoiceChannelPermissionsArrayList = DiscordBot.INSTANCE.getGuild().getVoiceChannels().stream().flatMap(voiceChannel -> voiceChannel.getPermissionOverrides().stream()).collect(Collectors.toCollection(ArrayList::new));
 
+        List<String> textChannel = new ArrayList<>();
+        List<String> voiceChannel = new ArrayList<>();
+        for (PermissionOverride permissionOverride : oldTextChannelPermissionsArrayList) {
+            textChannel.add(permissionOverride.getChannel().getName() + "~" + permissionOverride.getChannel().getId() + "~" + permissionOverride.getId() + "~" + permissionOverride.getAllowed() + "~" + permissionOverride.getDenied());
+        }
+        for (PermissionOverride permissionOverride : oldVoiceChannelPermissionsArrayList) {
+            voiceChannel.add(permissionOverride.getChannel().getName() + "~" + permissionOverride.getChannel().getId() + "~" + permissionOverride.getId() + "~" + permissionOverride.getAllowed() + "~" + permissionOverride.getDenied());
+        }
+
+        getDataOptional(MaintenanceData.class).get().setTextChannel(textChannel);
+        getDataOptional(MaintenanceData.class).get().setVoiceChannel(voiceChannel);
+
+    }
+
+    private void restoreChannel() {
+        if (getDataOptional(MaintenanceData.class).isEmpty()) return;
+
+        for (String s : getDataOptional(MaintenanceData.class).get().getTextChannel()) {
+            String[] data = s.split("~");
+            String name = data[0];
+
+            long channelId = Long.parseLong(data[1]);
+            long permissionId = Long.parseLong(data[2]);
+
+            TextChannel channel = DiscordBot.INSTANCE.getGuild().getTextChannelById(channelId);
+
+            if (channel == null) return;
+
+            data[3] = data[3].replace("[", "");
+            data[3] = data[3].replace("]", "");
+            if (!data[3].equals("")) {
+                List<Permission> allowed = Arrays.stream(data[3].split(", ")).map(Permission::valueOf).collect(Collectors.toList());
+                channel.getPermissionOverrides().stream().filter(permissionOverride -> permissionOverride.getIdLong() == permissionId).findFirst().ifPresent(permissionOverride -> permissionOverride.getManager().grant(allowed).queue());
+            }
         }
     }
 
@@ -83,16 +117,7 @@ public class MaintenanceObject extends ConfigLoader implements IMaintenanceObjec
 
         getMaintenanceChannel().delete().queue();
 
-        for (TextChannel textChannel : DiscordBot.INSTANCE.getGuild().getTextChannels()) {
-            for (PermissionOverride permissionOverride : textChannel.getPermissionOverrides()) {
-                permissionOverride.getManager().grant(Permission.VIEW_CHANNEL).queue();
-            }
-        }
-        for (VoiceChannel voiceChannel : DiscordBot.INSTANCE.getGuild().getVoiceChannels()) {
-            for (PermissionOverride permissionOverride : voiceChannel.getPermissionOverrides()) {
-                permissionOverride.getManager().grant(Permission.VIEW_CHANNEL).queue();
-            }
-        }
+        restoreChannel();
     }
 
     @Override
@@ -155,7 +180,7 @@ public class MaintenanceObject extends ConfigLoader implements IMaintenanceObjec
         private long scheduledMaintenance;
         private String reason;
         private long maintenanceChannel;
-        private final List<String> textChannel = new ArrayList<>();
-        private final List<String> voiceChannel = new ArrayList<>();
+        private List<String> textChannel;
+        private List<String> voiceChannel;
     }
 }
