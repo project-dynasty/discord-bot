@@ -5,4 +5,4 @@ discordbot-parent/target
 discordbot-parent/src/main/resources/token.txt
 core/target
 core-api/target
-module
+/module
