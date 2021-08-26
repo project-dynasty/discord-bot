@@ -1,6 +1,6 @@
 package net.dynasty.discord;
 
-import net.dynasty.api.module.DynastyPlugin;
+import net.dynasty.api.DynastyPlugin;
 
 public class Main {
 
