@@ -5,10 +5,7 @@ import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
 import net.dv8tion.jda.api.requests.restaction.CommandListUpdateAction;
 import net.dynasty.discord.DiscordBot;
-import net.dynasty.discord.command.AbstractCommand;
-import net.dynasty.discord.command.CommandParser;
-import net.dynasty.discord.command.MaintenanceCommand;
-import net.dynasty.discord.command.PostCommand;
+import net.dynasty.discord.command.*;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -22,7 +19,7 @@ public class CommandManager {
 
     public static void loadCommands() {
         CommandListUpdateAction commands = DiscordBot.INSTANCE.getGuild().updateCommands();
-        commands.addCommands(addCommand(new MaintenanceCommand("maintenance")), addCommand(new PostCommand("post")));
+        commands.addCommands(addCommand(new MaintenanceCommand("maintenance")), addCommand(new PostCommand("post")), addCommand(new BackupCommand("backup", "Create backups"))/*, addCommand(new RoleCommand("role"))*/);
         commands.queue();
     }
 

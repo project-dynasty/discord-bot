@@ -14,12 +14,16 @@ import net.dv8tion.jda.api.utils.cache.CacheFlag;
 import net.dynasty.api.Dynasty;
 import net.dynasty.api.DynastyPlugin;
 import net.dynasty.api.plugin.DynastyModule;
+import net.dynasty.discord.backup.BackupObject;
+import net.dynasty.discord.backup.IBackupObject;
+import net.dynasty.discord.backup.task.BackupTask;
 import net.dynasty.discord.listener.MessageListener;
 import net.dynasty.discord.listener.ReadyListener;
 import net.dynasty.discord.listener.SlashListener;
 import net.dynasty.discord.logger.Logger;
 import net.dynasty.discord.maintenance.IMaintenanceObject;
 import net.dynasty.discord.maintenance.MaintenanceObject;
+import net.dynasty.discord.name.NameCheck;
 import net.dynasty.discord.permission.IPermissionGroupLoader;
 import net.dynasty.discord.permission.PermissionGroupLoader;
 
@@ -39,6 +43,7 @@ public class DiscordBot extends DynastyPlugin {
 
     private IPermissionGroupLoader groupLoader;
     private IMaintenanceObject maintenanceObject;
+    private IBackupObject backupObject;
 
     public DiscordBot() {
         INSTANCE = this;
@@ -50,6 +55,9 @@ public class DiscordBot extends DynastyPlugin {
         init();
     }
 
+    /**
+     * Init the Discord Bot
+     */
     @SneakyThrows
     public void init() {
         String token = getResourceFileAsString();
@@ -82,6 +90,10 @@ public class DiscordBot extends DynastyPlugin {
 
         groupLoader = new PermissionGroupLoader();
         maintenanceObject = new MaintenanceObject();
+        backupObject = new BackupObject();
+
+        new NameCheck();
+        new BackupTask();
 
         System.out.println("Bot enabled...");
     }
