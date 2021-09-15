@@ -1,8 +1,11 @@
 package net.dynasty.discord.listener;
 
+import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.events.ReadyEvent;
+import net.dv8tion.jda.api.events.guild.member.GuildMemberRoleAddEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.interactions.commands.Command;
 import net.dynasty.api.Dynasty;
@@ -14,6 +17,8 @@ import net.dynasty.discord.player.DiscordPlayer;
 import net.dynasty.discord.player.IDiscordPlayer;
 import org.jetbrains.annotations.NotNull;
 
+import java.awt.*;
+
 public class ReadyListener extends ListenerAdapter {
 
     @Override
@@ -23,19 +28,11 @@ public class ReadyListener extends ListenerAdapter {
 
         System.out.println("Loading member...");
         long timestamp = System.currentTimeMillis();
-        if (guild == null) {
-            System.out.println("guild is null");
-            return;
-        }
-
-        /*CommandManager.addCommand(new MaintenanceCommand("maintenance"));
-        CommandManager.addCommand(new PostCommand("post"));*/
+        if (guild == null) return;
 
         CommandManager.loadCommands();
 
         guild.loadMembers(member -> {
-
-            System.out.println(member.getEffectiveName());
             IDiscordPlayer discordPlayer = new DiscordPlayer(member);
             discordPlayer.load(member.getIdLong());
             Dynasty.setPlayer(IDiscordPlayer.class, discordPlayer);

@@ -7,6 +7,7 @@ import net.dv8tion.jda.api.entities.Role;
 import net.dynasty.discord.DiscordBot;
 import net.dynasty.discord.player.IDiscordPlayer;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -35,9 +36,35 @@ public class PermissionObject implements IPermissionObject {
     @Override
     public boolean hasDiscordRank(long group) {
         boolean hasRole = discordPlayer.getMember().getRoles().stream().anyMatch(role -> role.getIdLong() == group);
-        if(!hasRole)
+        if (!hasRole)
             hasRole = discordPlayer.getMember().getRoles().stream().anyMatch(role -> role.getIdLong() == DiscordBot.INSTANCE.getGroupLoader().getDiscordId(group));
         return hasRole;
+    }
+
+    @Override
+    public List<Long> getGroupsId() {
+        List<Long> toReturn = new ArrayList<>();
+        List<Long> discordGroups = getDiscordGroups();
+        DiscordBot.INSTANCE.getGroupLoader().getGroups().forEach((id, discordId) -> {
+            if (discordGroups.contains(discordId))
+                toReturn.add(id);
+        });
+        return toReturn;
+    }
+
+    @Override
+    public List<Long> getDiscordGroups() {
+        List<Long> toReturn = new ArrayList<>();
+        DiscordBot.INSTANCE.getGroupLoader().getGroups().forEach((id, discordId) -> {
+            if (discordPlayer.getMember().getRoles().stream().anyMatch(role -> role.getIdLong() == discordId))
+                toReturn.add(discordId);
+        });
+        return toReturn;
+    }
+
+    @Override
+    public boolean isTeamMember() {
+        return getGroupsId().stream().findAny().isPresent();
     }
 
     /*@Override

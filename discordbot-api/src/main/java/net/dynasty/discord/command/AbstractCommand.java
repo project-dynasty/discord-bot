@@ -19,8 +19,8 @@ import java.util.List;
 public abstract class AbstractCommand {
 
     private final String name;
-    private String description;
-    private long channel;
+    private final String description;
+    private long channel = -1;
     private final List<OptionData> optionData = new ArrayList<>();
     private final List<String> aliases = new ArrayList<>();
     private final List<Long> permissionGroups = new ArrayList<>();

@@ -50,6 +50,22 @@ public class PermissionGroupLoader extends ConfigLoader implements IPermissionGr
         return getDataOptional(GroupLoadObject.class).get().getPermissionGroups().get(group);
     }
 
+    @Override
+    public long getSelfId(long group) {
+        final long[] toReturn = {0};
+        getGroups().forEach((id, discordId) -> {
+            if (group == discordId)
+                toReturn[0] = id;
+        });
+        return toReturn[0];
+    }
+
+    @Override
+    public Map<Long, Long> getGroups() {
+        if (getDataOptional(GroupLoadObject.class).isEmpty()) return new HashMap<>();
+        return getDataOptional(GroupLoadObject.class).get().getPermissionGroups();
+    }
+
     @RequiredArgsConstructor
     @Getter
     public static class GroupLoadObject implements LoadObject {

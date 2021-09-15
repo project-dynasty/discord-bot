@@ -23,9 +23,8 @@ public class MaintenanceCommand extends AbstractCommand {
     private final Map<IDiscordPlayer, String> reasonMap = new HashMap<>();
 
     public MaintenanceCommand(String name) {
-        super(name);
+        super(name, "Here you can set the maintenance mode");
         setPermissionGroups(PermissionGroupLoader.MANAGEMENT, PermissionGroupLoader.DEVELOPER);
-        setDescription("Here you can set the maintenance mode");
         setChannel(871677780117565440L);
         addOption(new OptionData(OptionType.BOOLEAN, "enabled", "enable maintenance", true),
                 new OptionData(OptionType.STRING, "reason", "reasons for maintenance", false),
@@ -39,12 +38,12 @@ public class MaintenanceCommand extends AbstractCommand {
         boolean isEnabled = enabledMapping.getAsBoolean();
         String name = isEnabled ? "enable" : "disable";
 
-        if(isEnabled && DiscordBot.INSTANCE.getMaintenanceObject().isMaintenance()) {
+        if (isEnabled && DiscordBot.INSTANCE.getMaintenanceObject().isMaintenance()) {
             event.replyEmbeds(new EmbedBuilder().setTitle("Maintenance").setDescription("Maintenance is already enabled!").setColor(Color.red).build()).addActionRow(Button.danger(buttonName("disable"), "Disable")).setEphemeral(true).queue();
             return;
         }
 
-        if(!isEnabled && !DiscordBot.INSTANCE.getMaintenanceObject().isMaintenance()) {
+        if (!isEnabled && !DiscordBot.INSTANCE.getMaintenanceObject().isMaintenance()) {
             event.replyEmbeds(new EmbedBuilder().setTitle("Maintenance").setDescription("Maintenance is already disabled!").setColor(Color.red).build()).addActionRow(Button.danger(buttonName("enable"), "Enable")).setEphemeral(true).queue();
             return;
         }

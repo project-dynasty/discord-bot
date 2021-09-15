@@ -27,10 +27,9 @@ public class PostCommand extends AbstractCommand {
     public static final List<Post> QUEUED_POSTS = new ArrayList<>();
 
     public PostCommand(String name) {
-        super(name);
+        super(name, "Here you can create a message sent by the Bot");
         setPermissionGroups(PermissionGroupLoader.MANAGEMENT, PermissionGroupLoader.MODERATOR, PermissionGroupLoader.CONCEPTION);
         setChannel(871677780117565440L);
-        setDescription("Here you can create a message sent by the Bot");
         addOption(new OptionData(OptionType.CHANNEL, "channel", "The channel where the message will be sent", true),
                 new OptionData(OptionType.STRING, "message", "The message (if image -> null)", true),
                 new OptionData(OptionType.BOOLEAN, "embed", "Is the message embed", false),
