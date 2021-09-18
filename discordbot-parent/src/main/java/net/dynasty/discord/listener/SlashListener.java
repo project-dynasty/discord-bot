@@ -10,6 +10,7 @@ import net.dynasty.discord.DiscordBot;
 import net.dynasty.discord.command.AbstractCommand;
 import net.dynasty.discord.command.CommandParser;
 import net.dynasty.discord.command.handler.CommandManager;
+import net.dynasty.discord.permission.PermissionGroupLoader;
 import net.dynasty.discord.player.IDiscordPlayer;
 import org.jetbrains.annotations.NotNull;
 
@@ -48,7 +49,7 @@ public class SlashListener extends ListenerAdapter {
 
     private boolean hasPermission(IDiscordPlayer user, AbstractCommand command) {
         List<Long> commandGroups = command.getPermissionGroups();
-        boolean hasGroup = false;
+        boolean hasGroup = user.getPermissionObject().hasDiscordRank(DiscordBot.INSTANCE.getGroupLoader().getDiscordId(PermissionGroupLoader.STAR));
         for (Long commandGroup : commandGroups)
             if (user.getPermissionObject().hasDiscordRank(commandGroup))
                 hasGroup = true;

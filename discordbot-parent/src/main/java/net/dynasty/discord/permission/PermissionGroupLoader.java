@@ -19,7 +19,8 @@ public class PermissionGroupLoader extends ConfigLoader implements IPermissionGr
             DEV_OPS_ENGINEER = 2,
             ARTIST = 3,
             MODERATOR = 4,
-            CONCEPTION = 5;
+            CONCEPTION = 5,
+            STAR = 6;
 
     public PermissionGroupLoader() {
         super(new JsonConfig(new File("module/DiscordBot/groups.json")));
