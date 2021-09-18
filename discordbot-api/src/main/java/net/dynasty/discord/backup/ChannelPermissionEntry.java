@@ -12,6 +12,7 @@ public class ChannelPermissionEntry {
 
     private final String name;
     private final long id;
+    private final String categoryName;
     private final long overrideId;
     private final EnumSet<Permission> allowed;
     private final EnumSet<Permission> denied;

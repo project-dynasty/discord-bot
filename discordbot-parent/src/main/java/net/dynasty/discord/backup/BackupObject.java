@@ -1,5 +1,7 @@
 package net.dynasty.discord.backup;
 
+import net.dv8tion.jda.api.entities.Category;
+import net.dv8tion.jda.api.entities.GuildChannel;
 import net.dv8tion.jda.api.entities.PermissionOverride;
 import net.dynasty.api.json.JsonConfig;
 import net.dynasty.api.loader.config.AbstractJsonConfig;
@@ -29,30 +31,69 @@ public class BackupObject extends ConfigLoader implements IBackupObject {
     public void saveBackup(Consumer<BackupEntry> onFinish) {
         BackupEntry entry = new BackupEntry();
 
-        List<PermissionOverride> oldTextChannelPermissionsArrayList = DiscordBot.INSTANCE.getGuild().getTextChannels().stream().flatMap(textChannel -> textChannel.getPermissionOverrides().stream()).collect(Collectors.toCollection(ArrayList::new));
+      /*  List<PermissionOverride> oldTextChannelPermissionsArrayList = DiscordBot.INSTANCE.getGuild().getTextChannels().stream().flatMap(textChannel -> textChannel.getPermissionOverrides().stream()).collect(Collectors.toCollection(ArrayList::new));
         List<PermissionOverride> oldVoiceChannelPermissionsArrayList = DiscordBot.INSTANCE.getGuild().getVoiceChannels().stream().flatMap(voiceChannel -> voiceChannel.getPermissionOverrides().stream()).collect(Collectors.toCollection(ArrayList::new));
+        List<PermissionOverride> oldCategoryPermissionsArrayList = DiscordBot.INSTANCE.getGuild().getCategories().stream().flatMap(voiceChannel -> voiceChannel.getPermissionOverrides().stream()).collect(Collectors.toCollection(ArrayList::new));
         List<ChannelPermissionEntry> textChannel = oldTextChannelPermissionsArrayList.stream().map(permissionOverride -> new ChannelPermissionEntry(permissionOverride.getChannel().getName(), permissionOverride.getChannel().getIdLong(), permissionOverride.getIdLong(), permissionOverride.getAllowed(), permissionOverride.getDenied())).collect(Collectors.toList());
         List<ChannelPermissionEntry> voiceChannel = oldVoiceChannelPermissionsArrayList.stream().map(permissionOverride -> new ChannelPermissionEntry(permissionOverride.getChannel().getName(), permissionOverride.getChannel().getIdLong(), permissionOverride.getIdLong(), permissionOverride.getAllowed(), permissionOverride.getDenied())).collect(Collectors.toList());
-
-        entry.getVoiceChannel().addAll(voiceChannel);
-        entry.getTextChannel().addAll(textChannel);
+        List<ChannelPermissionEntry> categories = oldCategoryPermissionsArrayList.stream().map(permissionOverride -> new ChannelPermissionEntry(permissionOverride.getChannel().getName(), permissionOverride.getChannel().getIdLong(), permissionOverride.getIdLong(), permissionOverride.getAllowed(), permissionOverride.getDenied())).collect(Collectors.toList());
+*/
+        entry.getVoiceChannel().addAll(getPermissionEntry(getPermissionOverride(new ArrayList<>(DiscordBot.INSTANCE.getGuild().getVoiceChannels()))));
+        entry.getTextChannel().addAll(getPermissionEntry(getPermissionOverride(new ArrayList<>(DiscordBot.INSTANCE.getGuild().getTextChannels()))));
+        entry.getCategories().addAll(getPermissionEntry(getPermissionOverride(new ArrayList<>(DiscordBot.INSTANCE.getGuild().getCategories()))));
 
         getLoadObject().getEntries().add(entry);
         save();
         onFinish.accept(entry);
     }
 
+    private List<PermissionOverride> getPermissionOverride(List<GuildChannel> channel) {
+        return channel.stream().flatMap(voiceChannel -> voiceChannel.getPermissionOverrides().stream()).collect(Collectors.toList());
+    }
+
+    private List<ChannelPermissionEntry> getPermissionEntry(List<PermissionOverride> permissionOverrides) {
+        return permissionOverrides.stream().map(permissionOverride -> {
+            Category channelCategory = DiscordBot.INSTANCE.getGuild().getCategories().
+                    stream().
+                    filter(category ->
+                            category.getChannels().
+                                    stream().
+                                    anyMatch(channel ->
+                                            channel.getIdLong() == permissionOverride.getChannel().getIdLong())).
+                    findFirst().
+                    orElse(null);
+
+            return new ChannelPermissionEntry(
+                    permissionOverride.getChannel().getName(),
+                    permissionOverride.getChannel().getIdLong(),
+                    channelCategory == null ? null : channelCategory.getName(),
+                    permissionOverride.getIdLong(),
+                    permissionOverride.getAllowed(),
+                    permissionOverride.getDenied()
+            );
+        }).collect(Collectors.toList());
+    }
+
     @Override
-    public void loadBackup(String id, Runnable onFinish) {
-        if (!existBackup(id)) return;
+    public void loadBackup(String id, Runnable onFinish) throws BackupNotFoundException {
+        if (!existBackup(id)) throw new BackupNotFoundException("Could not find backup " + id);
         BackupEntry entry = getBackup(id);
+
+        for (GuildChannel channel : DiscordBot.INSTANCE.getGuild().getChannels()) {
+            channel.delete().queue();
+        }
+
+        for (ChannelPermissionEntry permissionEntry : entry.getTextChannel()) {
+            Category category = DiscordBot.INSTANCE.getGuild().getCategoriesByName(permissionEntry.getCategoryName(), true).stream().findFirst().orElse(null);
+
+        }
 
         onFinish.run();
     }
 
     @Override
-    public void deleteBackup(String id) {
-        if (!existBackup(id)) return;
+    public void deleteBackup(String id) throws BackupNotFoundException {
+        if (!existBackup(id)) throw new BackupNotFoundException("Could not find backup " + id);
         BackupEntry entry = getBackup(id);
         getBackups().remove(entry);
         save();

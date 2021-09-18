@@ -2,12 +2,15 @@ package net.dynasty.discord.command;
 
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.events.interaction.ButtonClickEvent;
+import net.dv8tion.jda.api.events.interaction.GenericComponentInteractionCreateEvent;
+import net.dv8tion.jda.api.events.interaction.GenericInteractionCreateEvent;
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.dv8tion.jda.api.interactions.components.Button;
 import net.dynasty.discord.DiscordBot;
 import net.dynasty.discord.backup.BackupEntry;
+import net.dynasty.discord.backup.BackupNotFoundException;
 import net.dynasty.discord.permission.PermissionGroupLoader;
 import net.dynasty.discord.player.IDiscordPlayer;
 
@@ -48,9 +51,11 @@ public class BackupCommand extends AbstractCommand {
                     return;
                 }
                 String id = event.getOption("id").getAsString();
-                DiscordBot.INSTANCE.getBackupObject().loadBackup(id, () -> {
-                    event.replyEmbeds(new EmbedBuilder().setColor(Color.green).setDescription("loaded backup " + id).build()).setEphemeral(true).addActionRow(Button.danger(buttonName("delete_" + id), "Delete Backup")).queue();
-                });
+                if (!DiscordBot.INSTANCE.getBackupObject().existBackup(id)) {
+                    event.replyEmbeds(new EmbedBuilder().setColor(Color.red).setDescription("This backup does not exist!").build()).setEphemeral(true).queue();
+                    return;
+                }
+                event.replyEmbeds(new EmbedBuilder().setColor(Color.cyan).setDescription("You sure to load this backup?").build()).setEphemeral(true).addActionRow(Button.danger(buttonName("confirm_" + id), "Confirm")).queue();
                 break;
             }
             case "list": {
@@ -68,8 +73,7 @@ public class BackupCommand extends AbstractCommand {
                     return;
                 }
                 String id = event.getOption("id").getAsString();
-                DiscordBot.INSTANCE.getBackupObject().deleteBackup(id);
-                event.replyEmbeds(new EmbedBuilder().setColor(Color.red).setDescription("Deleted backup " + id).build()).setEphemeral(true).queue();
+                deleteBackup(id, event);
                 break;
             }
             case "interval": {
@@ -85,13 +89,32 @@ public class BackupCommand extends AbstractCommand {
         }
     }
 
+    private void deleteBackup(String id, GenericInteractionCreateEvent event) {
+        try {
+            DiscordBot.INSTANCE.getBackupObject().deleteBackup(id);
+            event.replyEmbeds(new EmbedBuilder().setColor(Color.red).setDescription("Deleted backup " + id).build()).setEphemeral(true).queue();
+        } catch (BackupNotFoundException e) {
+            event.replyEmbeds(new EmbedBuilder().setColor(Color.red).setDescription("This backup does not exist!").build()).setEphemeral(true).queue();
+        }
+    }
+
     @Override
     public void onButtonClick(IDiscordPlayer user, ButtonClickEvent clickEvent, String name) {
         switch (name) {
             case "delete": {
                 String id = clickEvent.getComponentId().split("_")[2];
-                DiscordBot.INSTANCE.getBackupObject().deleteBackup(id);
-                clickEvent.replyEmbeds(new EmbedBuilder().setColor(Color.red).setDescription("Deleted backup " + id).build()).setEphemeral(true).queue();
+                deleteBackup(id, clickEvent);
+                break;
+            }
+            case "confirm": {
+                String id = clickEvent.getComponentId().split("_")[2];
+                try {
+                    DiscordBot.INSTANCE.getBackupObject().loadBackup(id, () -> {
+                        clickEvent.replyEmbeds(new EmbedBuilder().setColor(Color.green).setDescription("loaded backup " + id).build()).setEphemeral(true).addActionRow(Button.danger(buttonName("delete_" + id), "Delete Backup")).queue();
+                    });
+                } catch (BackupNotFoundException e) {
+                    clickEvent.replyEmbeds(new EmbedBuilder().setColor(Color.red).setDescription("This backup does not exist!").build()).setEphemeral(true).queue();
+                }
                 break;
             }
         }

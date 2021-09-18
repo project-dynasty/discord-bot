@@ -12,9 +12,9 @@ public interface IBackupObject {
 
     void saveBackup(Consumer<BackupEntry> onFinish);
 
-    void loadBackup(String id, Runnable onFinish);
+    void loadBackup(String id, Runnable onFinish) throws BackupNotFoundException;
 
-    void deleteBackup(String id);
+    void deleteBackup(String id) throws BackupNotFoundException;
 
     boolean existBackup(String id);
 
