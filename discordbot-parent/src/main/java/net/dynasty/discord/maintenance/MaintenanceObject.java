@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
+import net.dv8tion.jda.api.entities.GuildChannel;
 import net.dv8tion.jda.api.entities.PermissionOverride;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.entities.VoiceChannel;
@@ -12,6 +13,8 @@ import net.dynasty.api.json.JsonConfig;
 import net.dynasty.api.loader.LoadObject;
 import net.dynasty.api.loader.config.ConfigLoader;
 import net.dynasty.discord.DiscordBot;
+import net.dynasty.discord.backup.BackupEntry;
+import net.dynasty.discord.backup.ChannelPermissionEntry;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
@@ -26,7 +29,7 @@ public class MaintenanceObject extends ConfigLoader implements IMaintenanceObjec
 
     public MaintenanceObject() {
         super(new JsonConfig(new File("module/DiscordBot/maintenance.json")));
-        load(new LoadInfo<>("maintenance", MaintenanceData.class, new MaintenanceData(false, -1, null, -1, new ArrayList<>(), new ArrayList<>())));
+        load(new LoadInfo<>("maintenance", MaintenanceData.class, new MaintenanceData(false, -1, null, null, -1)));
 
         if (shouldEnableMaintenance() && !isMaintenance())
             enableMaintenance(getReason());
@@ -44,7 +47,9 @@ public class MaintenanceObject extends ConfigLoader implements IMaintenanceObjec
         getDataOptional(MaintenanceData.class).get().setMaintenance(true);
         getDataOptional(MaintenanceData.class).get().setReason(reason);
 
-        saveChannels();
+        DiscordBot.INSTANCE.getBackupObject().saveBackup(entry -> {
+            getDataOptional(MaintenanceData.class).get().setBackupId(entry.getId());
+        });
 
         for (TextChannel textChannel : DiscordBot.INSTANCE.getGuild().getTextChannels()) {
             for (PermissionOverride permissionOverride : textChannel.getPermissionOverrides()) {
@@ -64,10 +69,11 @@ public class MaintenanceObject extends ConfigLoader implements IMaintenanceObjec
         channel.sendMessageEmbeds(new EmbedBuilder().setTitle("Maintenance", "https://dynasty.net/warum_maintenance?").setDescription("**Reason**:\n" + getReason()).setFooter("Dynasty.net " + new SimpleDateFormat("dd.MM.yyyy").format(System.currentTimeMillis()), DiscordBot.INSTANCE.getJda().getSelfUser().getAvatarUrl()).build()).queue();
 
         setMaintenanceChannel(channel);
+        save("maintenance");
 
     }
 
-    private void saveChannels() {
+    /*private void saveChannels() {
         List<PermissionOverride> oldTextChannelPermissionsArrayList = DiscordBot.INSTANCE.getGuild().getTextChannels().stream().flatMap(textChannel -> textChannel.getPermissionOverrides().stream()).collect(Collectors.toCollection(ArrayList::new));
         List<PermissionOverride> oldVoiceChannelPermissionsArrayList = DiscordBot.INSTANCE.getGuild().getVoiceChannels().stream().flatMap(voiceChannel -> voiceChannel.getPermissionOverrides().stream()).collect(Collectors.toCollection(ArrayList::new));
 
@@ -106,16 +112,35 @@ public class MaintenanceObject extends ConfigLoader implements IMaintenanceObjec
                 channel.getPermissionOverrides().stream().filter(permissionOverride -> permissionOverride.getIdLong() == permissionId).findFirst().ifPresent(permissionOverride -> permissionOverride.getManager().grant(allowed).queue());
             }
         }
-    }
+    }*/
 
     @Override
     public void disableMaintenance() {
         if (getDataOptional(MaintenanceData.class).isEmpty()) return;
         getDataOptional(MaintenanceData.class).get().setMaintenance(false);
+        getDataOptional(MaintenanceData.class).get().setReason(null);
+        getDataOptional(MaintenanceData.class).get().setBackupId(null);
 
         getMaintenanceChannel().delete().queue();
 
-        restoreChannel();
+        BackupEntry backupEntry = DiscordBot.INSTANCE.getBackupObject().getBackup(getDataOptional(MaintenanceData.class).get().getBackupId());
+        if (backupEntry != null) {
+            System.out.println("Load channels from backup " + backupEntry.getId());
+
+            for (ChannelPermissionEntry permissionEntry : backupEntry.getAllEntries()) {
+                GuildChannel guildChannel = DiscordBot.INSTANCE.getGuild().getTextChannels().stream().filter(channel -> channel.getIdLong() == permissionEntry.getId()).findFirst().orElse(null);
+                if (guildChannel == null) continue;
+
+                PermissionOverride override = guildChannel.getPermissionOverrides().stream().filter(permissionOverride -> permissionEntry.getId() == permissionEntry.getOverrideId()).findFirst().orElse(null);
+                if (override == null) continue;
+
+                override.getManager().setAllow(permissionEntry.getAllowed()).queue();
+                override.getManager().setDeny(permissionEntry.getDenied()).queue();
+            }
+        }
+
+        save("maintenance");
+
     }
 
     @Override
@@ -177,8 +202,7 @@ public class MaintenanceObject extends ConfigLoader implements IMaintenanceObjec
         private boolean maintenance;
         private long scheduledMaintenance;
         private String reason;
+        private String backupId;
         private long maintenanceChannel;
-        private List<String> textChannel;
-        private List<String> voiceChannel;
     }
 }
