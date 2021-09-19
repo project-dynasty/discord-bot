@@ -9,7 +9,7 @@ public interface IMaintenanceObject {
 
     void enableMaintenance(@Nullable String reason);
 
-    void disableMaintenance();
+    void disableMaintenance(boolean deleteBackup);
 
     void scheduleMaintenance(long timestampStart, @Nullable String reason);
 

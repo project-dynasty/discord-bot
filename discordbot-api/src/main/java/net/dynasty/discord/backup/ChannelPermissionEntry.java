@@ -11,7 +11,7 @@ import java.util.EnumSet;
 public class ChannelPermissionEntry {
 
     private final String name;
-    private final long id;
+    private final long channelId;
     private final String categoryName;
     private final long overrideId;
     private final EnumSet<Permission> allowed;

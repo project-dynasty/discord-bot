@@ -48,7 +48,7 @@ public class PermissionGroupLoader extends ConfigLoader implements IPermissionGr
     @Override
     public long getDiscordId(long group) {
         if (getDataOptional(GroupLoadObject.class).isEmpty()) return -1;
-        return getDataOptional(GroupLoadObject.class).get().getPermissionGroups().get(group);
+        return getDataOptional(GroupLoadObject.class).get().getPermissionGroups().getOrDefault(group, 0L);
     }
 
     @Override

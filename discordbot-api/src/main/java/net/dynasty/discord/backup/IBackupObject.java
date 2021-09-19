@@ -22,9 +22,9 @@ public interface IBackupObject {
 
     List<BackupEntry> getBackups();
 
-    BackupEntry getLastBackup();
+    BackupEntry getLastBackup() throws BackupNotFoundException;
 
-    BackupEntry getFirstBackup();
+    BackupEntry getFirstBackup() throws BackupNotFoundException;
 
     long getBackupInterval();
 

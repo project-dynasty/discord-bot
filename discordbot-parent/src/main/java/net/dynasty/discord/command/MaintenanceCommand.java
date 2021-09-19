@@ -1,22 +1,23 @@
 package net.dynasty.discord.command;
 
 import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.entities.Emoji;
 import net.dv8tion.jda.api.events.interaction.ButtonClickEvent;
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
+import net.dv8tion.jda.api.interactions.components.ActionRow;
 import net.dv8tion.jda.api.interactions.components.Button;
+import net.dv8tion.jda.api.interactions.components.Component;
 import net.dynasty.discord.DiscordBot;
 import net.dynasty.discord.permission.PermissionGroupLoader;
 import net.dynasty.discord.player.IDiscordPlayer;
 
 import java.awt.*;
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class MaintenanceCommand extends AbstractCommand {
 
@@ -66,12 +67,22 @@ public class MaintenanceCommand extends AbstractCommand {
                 break;
             }
             case "disable": {
-                DiscordBot.INSTANCE.getMaintenanceObject().disableMaintenance();
-                clickEvent.editMessageEmbeds(new EmbedBuilder().setTitle("Maintenance").setDescription("You disabled the maintenance").setColor(Color.green).build()).setActionRows(new ArrayList<>()).queue();
+                clickEvent.editMessageEmbeds(new EmbedBuilder().setDescription("Do you want to delete the backup?").setColor(Color.cyan).build()).setActionRow(Button.danger(buttonName("delete"), "Yes"), Button.success(buttonName("keep"), "No"), Button.secondary(buttonName("cancel"), "Cancel")).queue();
+                break;
+            }
+            case "delete": {
+                DiscordBot.INSTANCE.getMaintenanceObject().disableMaintenance(true);
+                clickEvent.editMessageEmbeds(new EmbedBuilder().setTitle("Maintenance").setDescription("You disabled the maintenance").setColor(Color.green).build()).setActionRow(new ArrayList<>()).queue();
+                break;
+            }
+            case "keep": {
+                DiscordBot.INSTANCE.getMaintenanceObject().disableMaintenance(false);
+                clickEvent.editMessageEmbeds(new EmbedBuilder().setTitle("Maintenance").setDescription("You disabled the maintenance").setColor(Color.green).build()).setActionRow(new ArrayList<>()).queue();
                 break;
             }
             case "cancel": {
-                clickEvent.editMessageEmbeds(new EmbedBuilder().setColor(Color.DARK_GRAY).setTitle("Maintenance").setDescription("~~" + clickEvent.getMessage().getEmbeds().get(0).getDescription() + "~~").build()).setActionRow(Button.success(buttonName("confirm"), "Confirm").asDisabled(), Button.secondary(buttonName("cancel"), "Cancel").asDisabled()).queue();
+                Collection<Button> actionRows = clickEvent.getMessage().getButtons().stream().map(button -> button = button.asDisabled()).collect(Collectors.toList());
+                clickEvent.editMessageEmbeds(new EmbedBuilder().setColor(Color.DARK_GRAY).setTitle("Maintenance").setDescription("~~" + clickEvent.getMessage().getEmbeds().get(0).getDescription() + "~~").build()).setActionRow(actionRows).queue();
                 break;
             }
         }

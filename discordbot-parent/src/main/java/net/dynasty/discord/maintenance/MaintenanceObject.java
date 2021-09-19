@@ -14,6 +14,7 @@ import net.dynasty.api.loader.LoadObject;
 import net.dynasty.api.loader.config.ConfigLoader;
 import net.dynasty.discord.DiscordBot;
 import net.dynasty.discord.backup.BackupEntry;
+import net.dynasty.discord.backup.BackupNotFoundException;
 import net.dynasty.discord.backup.ChannelPermissionEntry;
 import org.jetbrains.annotations.Nullable;
 
@@ -115,11 +116,10 @@ public class MaintenanceObject extends ConfigLoader implements IMaintenanceObjec
     }*/
 
     @Override
-    public void disableMaintenance() {
+    public void disableMaintenance(boolean deleteBackup) {
         if (getDataOptional(MaintenanceData.class).isEmpty()) return;
         getDataOptional(MaintenanceData.class).get().setMaintenance(false);
         getDataOptional(MaintenanceData.class).get().setReason(null);
-        getDataOptional(MaintenanceData.class).get().setBackupId(null);
 
         getMaintenanceChannel().delete().queue();
 
@@ -128,17 +128,24 @@ public class MaintenanceObject extends ConfigLoader implements IMaintenanceObjec
             System.out.println("Load channels from backup " + backupEntry.getId());
 
             for (ChannelPermissionEntry permissionEntry : backupEntry.getAllEntries()) {
-                GuildChannel guildChannel = DiscordBot.INSTANCE.getGuild().getTextChannels().stream().filter(channel -> channel.getIdLong() == permissionEntry.getId()).findFirst().orElse(null);
+                GuildChannel guildChannel = DiscordBot.INSTANCE.getGuild().getChannels().stream().filter(channel -> channel.getIdLong() == permissionEntry.getChannelId()).findFirst().orElse(null);
                 if (guildChannel == null) continue;
 
-                PermissionOverride override = guildChannel.getPermissionOverrides().stream().filter(permissionOverride -> permissionEntry.getId() == permissionEntry.getOverrideId()).findFirst().orElse(null);
+                PermissionOverride override = guildChannel.getPermissionOverrides().stream().filter(permissionOverride -> permissionOverride.getIdLong() == permissionEntry.getOverrideId()).findFirst().orElse(null);
                 if (override == null) continue;
 
                 override.getManager().setAllow(permissionEntry.getAllowed()).queue();
                 override.getManager().setDeny(permissionEntry.getDenied()).queue();
             }
+            if (deleteBackup)
+                try {
+                    DiscordBot.INSTANCE.getBackupObject().deleteBackup(backupEntry.getId());
+                } catch (BackupNotFoundException e) {
+                    e.printStackTrace();
+                }
         }
 
+        getDataOptional(MaintenanceData.class).get().setBackupId(null);
         save("maintenance");
 
     }

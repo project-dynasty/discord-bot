@@ -4,7 +4,6 @@ import net.dv8tion.jda.api.entities.Category;
 import net.dv8tion.jda.api.entities.GuildChannel;
 import net.dv8tion.jda.api.entities.PermissionOverride;
 import net.dynasty.api.json.JsonConfig;
-import net.dynasty.api.loader.config.AbstractJsonConfig;
 import net.dynasty.api.loader.config.ConfigLoader;
 import net.dynasty.discord.DiscordBot;
 
@@ -76,7 +75,7 @@ public class BackupObject extends ConfigLoader implements IBackupObject {
 
     @Override
     public void loadBackup(String id, Runnable onFinish) throws BackupNotFoundException {
-        if (!existBackup(id)) throw new BackupNotFoundException("Could not find backup " + id);
+        if (!existBackup(id)) throw new BackupNotFoundException("There is no backup with id" + id, id);
         BackupEntry entry = getBackup(id);
 
         for (GuildChannel channel : DiscordBot.INSTANCE.getGuild().getChannels()) {
@@ -93,7 +92,7 @@ public class BackupObject extends ConfigLoader implements IBackupObject {
 
     @Override
     public void deleteBackup(String id) throws BackupNotFoundException {
-        if (!existBackup(id)) throw new BackupNotFoundException("Could not find backup " + id);
+        if (!existBackup(id)) throw new BackupNotFoundException("There is no backup with id" + id, id);
         BackupEntry entry = getBackup(id);
         getBackups().remove(entry);
         save();
@@ -117,15 +116,15 @@ public class BackupObject extends ConfigLoader implements IBackupObject {
     }
 
     @Override
-    public BackupEntry getLastBackup() {
-        return getBackups().stream().findFirst().orElse(null);
+    public BackupEntry getLastBackup() throws BackupNotFoundException {
+        return getBackups().stream().findFirst().orElseThrow(() -> new BackupNotFoundException("There is no last backup", null));
     }
 
     @Override
-    public BackupEntry getFirstBackup() {
+    public BackupEntry getFirstBackup() throws BackupNotFoundException {
         List<BackupEntry> reversedBackups = new ArrayList<>(getBackups());
         Collections.reverse(reversedBackups);
-        return reversedBackups.stream().findFirst().orElse(null);
+        return reversedBackups.stream().findFirst().orElseThrow(() -> new BackupNotFoundException("There is no first backup", null));
     }
 
     @Override
